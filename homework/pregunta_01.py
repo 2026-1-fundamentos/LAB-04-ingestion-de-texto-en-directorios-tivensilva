@@ -71,3 +71,26 @@ def pregunta_01():
 
 
     """
+    import glob
+    import os
+    import zipfile
+
+    import pandas as pd
+
+    if not os.path.exists("files/input"):
+        with zipfile.ZipFile("files/input.zip", "r") as zip_file:
+            zip_file.extractall("files")
+
+    os.makedirs("files/output", exist_ok=True)
+
+    for partition in ["train", "test"]:
+        records = []
+        for sentiment in ["positive", "negative", "neutral"]:
+            pattern = os.path.join("files", "input", partition, sentiment, "*.txt")
+            for filepath in sorted(glob.glob(pattern)):
+                with open(filepath, "r", encoding="utf-8") as file:
+                    phrase = file.read().strip()
+                records.append({"phrase": phrase, "target": sentiment})
+
+        dataframe = pd.DataFrame(records)
+        dataframe.to_csv(f"files/output/{partition}_dataset.csv", index=False)
